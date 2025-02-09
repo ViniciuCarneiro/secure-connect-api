@@ -1,0 +1,41 @@
+# Compiled class file
+*.class
+
+# Log files
+*.log
+
+# IntelliJ IDEA files
+.idea/
+
+# Eclipse files
+.classpath
+.project
+.settings/
+
+# Maven-specific
+target/
+
+# Spring Boot specific
+spring-boot-starter.log
+
+# Application properties
+application.properties
+
+# Package file
+*.jar
+
+# Test reports
+/test-output/
+
+# macOS specific files
+.DS_Store
+
+# Gradle specific
+.gradle/
+
+# IDE files
+.vscode/
+
+# OS-specific files
+Thumbs.db
+ehthumbs.db
