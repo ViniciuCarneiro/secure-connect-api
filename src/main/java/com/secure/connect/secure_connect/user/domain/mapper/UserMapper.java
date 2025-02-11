@@ -24,7 +24,6 @@ public class UserMapper {
                 .name(user.getName())
                 .email(user.getEmail())
                 .userName(user.getUsername())
-                .role(user.getRole())
                 .build();
     }
 
@@ -36,7 +35,6 @@ public class UserMapper {
                     .name(user.getName())
                     .email(user.getEmail())
                     .userName(user.getUsername())
-                    .role(user.getRole())
                     .build());
         }
 
