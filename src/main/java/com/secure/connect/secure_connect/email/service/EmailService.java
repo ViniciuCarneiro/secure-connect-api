@@ -19,4 +19,13 @@ public class EmailService {
         message.setText("Para confirmar seu cadastro, clique no link: " + url);
         mailSender.send(message);
     }
+
+    public void sendForgotPassword(String email, String token) {
+        String url = "http://localhost:8080/api/auth/reset-password?token=" + token;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Confirmação de E-mail");
+        message.setText("Para confirmar seu cadastro, clique no link: " + url);
+        mailSender.send(message);
+    }
 }

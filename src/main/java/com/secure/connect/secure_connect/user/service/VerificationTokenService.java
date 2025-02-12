@@ -16,9 +16,6 @@ public class VerificationTokenService {
     @Autowired
     private VerificationTokenRepository tokenRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
     public String generateVerificationToken(User user) {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken();
@@ -30,22 +27,21 @@ public class VerificationTokenService {
         return token;
     }
 
-    public boolean validateVerificationToken(String token) {
+    public String validateVerificationToken(String token) {
         Optional<VerificationToken> optionalToken = tokenRepository.findByToken(token);
 
         if (optionalToken.isPresent()) {
             VerificationToken verificationToken = optionalToken.get();
             if (verificationToken.getExpiryDate().isAfter(LocalDateTime.now())) {
-                Optional<User> optionalUser = userRepository.findById(verificationToken.getUserId());
-                if (optionalUser.isPresent()) {
-                    User user = optionalUser.get();
-                    user.setEmailVerified(true);
-                    userRepository.save(user);
-                    tokenRepository.delete(verificationToken);
-                    return true;
-                }
+                return verificationToken.getUserId();
             }
         }
-        return false;
+        return null;
+    }
+
+    public void deleteToken(String token) {
+        Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
+
+        verificationToken.ifPresent(value -> tokenRepository.delete(value));
     }
 }

@@ -46,6 +46,7 @@ public class UserMapper {
                     .name(user.getName())
                     .email(user.getEmail())
                     .userName(user.getUsername())
+                    .mfaEnabled(user.isMfaEnabled())
                     .build());
         }
 

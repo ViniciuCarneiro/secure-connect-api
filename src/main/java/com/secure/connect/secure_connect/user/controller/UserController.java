@@ -21,41 +21,20 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UserController {
 
-    @Value("${spring.application.name}")
-    private static String appName;
+    @Autowired
+    private UserService userService;
 
     @Autowired
-    UserService userService;
+    private VerificationTokenService tokenService;
 
     @Autowired
-    VerificationTokenService tokenService;
-
-    @Autowired
-    EmailService emailService;
-
-    @PostMapping("/register")
-    public ResponseEntity<ResponseStandard> register(@RequestBody @Valid UserRequest request) {
-        try {
-            User user = userService.registerUser(UserMapper.userRequestToUser(request));
-
-            String token = tokenService.generateVerificationToken(user);
-            emailService.sendVerificationEmail(user.getEmail(), token);
-
-            ResponseStandard response = new ResponseStandard("User successfully registered",
-                    Optional.of(UserMapper.userToUserResponse(user, appName)));
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            ResponseStandard errorResponse = new ResponseStandard("Failed to register user: " + e.getMessage(), Optional.empty());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
+    private EmailService emailService;
 
     @GetMapping("/search")
     public ResponseEntity<ResponseStandard> find() {
-         try {
+        try {
 
-             List<User> listUsers = userService.find();
+            List<User> listUsers = userService.findAll();
 
             ResponseStandard response = new ResponseStandard("Successful user research",
                     Optional.of(UserMapper.userListToUserResponse(listUsers)));
@@ -67,11 +46,32 @@ public class UserController {
         }
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<ResponseStandard> register(@RequestBody @Valid UserRequest request) {
+        try {
+            User user = userService.registerUser(UserMapper.userRequestToUser(request));
+
+            String token = tokenService.generateVerificationToken(user);
+            emailService.sendVerificationEmail(user.getEmail(), token);
+
+            ResponseStandard response = new ResponseStandard("User successfully registered",
+                    Optional.of(UserMapper.userToUserResponse(user, "secure-connect")));
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            ResponseStandard errorResponse = new ResponseStandard("Failed to register user: " + e.getMessage(), Optional.empty());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     @GetMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam String token) {
-        boolean isValid = tokenService.validateVerificationToken(token);
-        if (isValid) {
-            return ResponseEntity.ok("E-mail confirmado com sucesso!");
+        String userId = tokenService.validateVerificationToken(token);
+        if (userId != null) {
+            if(userService.verifiedEmail(userId)) {
+                tokenService.deleteToken(token);
+                return ResponseEntity.ok("E-mail confirmado com sucesso!");
+            }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token inválido ou expirado.");
     }

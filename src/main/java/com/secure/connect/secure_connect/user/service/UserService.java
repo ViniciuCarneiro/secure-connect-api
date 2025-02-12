@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -24,13 +25,25 @@ public class UserService {
     @Autowired
     private TotpService totpService;
 
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    public UserDetails findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public User findById(String userId) {
+        return userRepository.findById(userId).get();
+    }
+
     public User registerUser(User user) {
 
         return userRepository.save(encryptData(user));
     }
 
-    public List<User> find() {
-        return userRepository.findAll();
+    public void updateUser(User user) {
+        userRepository.save(user);
     }
 
     protected User encryptData(User user) {
@@ -41,6 +54,20 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public boolean verifiedEmail(String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setEmailVerified(true);
+            userRepository.save(user);
+
+            return true;
+        }
+
+        return false;
     }
 
     protected String encryptPassword(String password) {

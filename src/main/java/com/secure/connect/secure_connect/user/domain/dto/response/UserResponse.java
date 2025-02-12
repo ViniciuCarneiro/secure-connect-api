@@ -1,5 +1,6 @@
 package com.secure.connect.secure_connect.user.domain.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.secure.connect.secure_connect.user.domain.enums.UserRole;
 import lombok.*;
 
@@ -13,5 +14,6 @@ public class UserResponse {
     private String userName;
     private String email;
     private boolean mfaEnabled;
+    @JsonIgnore
     private String qrCodeMfa;
 }
