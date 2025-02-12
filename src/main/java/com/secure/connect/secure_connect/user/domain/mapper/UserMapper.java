@@ -1,8 +1,11 @@
 package com.secure.connect.secure_connect.user.domain.mapper;
 
+import com.secure.connect.secure_connect.auth.service.QrCodeService;
+import com.secure.connect.secure_connect.auth.service.TotpService;
 import com.secure.connect.secure_connect.user.domain.User;
 import com.secure.connect.secure_connect.user.domain.dto.request.UserRequest;
 import com.secure.connect.secure_connect.user.domain.dto.response.UserResponse;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +19,22 @@ public class UserMapper {
                 .username(userRequest.getUsername())
                 .password(userRequest.getPassword())
                 .role(userRequest.getRole())
+                .mfaEnabled(userRequest.isMfaEnabled())
                 .build();
     }
 
-    public static UserResponse userToUserResponse(User user) {
+    public static UserResponse userToUserResponse(User user, String appName) {
        return UserResponse.builder()
                 .name(user.getName())
                 .email(user.getEmail())
                 .userName(user.getUsername())
+                .mfaEnabled(user.isMfaEnabled())
+                .qrCodeMfa(user.isMfaEnabled() ?
+                        QrCodeService.getQRCode(TotpService.buildOtpAuthUri(
+                                appName,
+                                user.getEmail(),
+                                user.getTotpSecret()
+                        )) : null)
                 .build();
     }
 

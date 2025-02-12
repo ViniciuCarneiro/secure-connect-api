@@ -9,6 +9,7 @@ import com.secure.connect.secure_connect.user.service.UserService;
 import com.secure.connect.secure_connect.user.service.VerificationTokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
+    @Value("${spring.application.name}")
+    private static String appName;
 
     @Autowired
     UserService userService;
@@ -38,7 +42,7 @@ public class UserController {
             emailService.sendVerificationEmail(user.getEmail(), token);
 
             ResponseStandard response = new ResponseStandard("User successfully registered",
-                    Optional.of(UserMapper.userToUserResponse(user)));
+                    Optional.of(UserMapper.userToUserResponse(user, appName)));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {

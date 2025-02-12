@@ -16,8 +16,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email)  {
         try{
-            UserDetails u = userRepository.findByEmail(email);
-            return u;
+            return userRepository.findByEmail(email);
         }
         catch (Exception e) {
             e.printStackTrace();

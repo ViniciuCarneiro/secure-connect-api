@@ -20,4 +20,6 @@ public class UserRequest {
     private String password;
     @NotNull
     private UserRole role;
+    @NotNull
+    private boolean mfaEnabled;
 }

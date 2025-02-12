@@ -12,4 +12,6 @@ public class UserResponse {
     private String name;
     private String userName;
     private String email;
+    private boolean mfaEnabled;
+    private String qrCodeMfa;
 }

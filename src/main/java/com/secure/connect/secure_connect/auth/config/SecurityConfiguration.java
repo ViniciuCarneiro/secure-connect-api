@@ -1,6 +1,7 @@
 package com.secure.connect.secure_connect.auth.config;
 
 import com.secure.connect.secure_connect.auth.jwt.JwtAuthenticationFilter;
+import com.secure.connect.secure_connect.user.domain.enums.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,9 +36,10 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/verify-email").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/auth/login/verify-otp").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/register").hasRole("USER_ADMIN")
 //                        .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAnyAuthority(UserRole.ROLE_USER_STANDARD.name(), UserRole.ROLE_USER_ADMIN.name())
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
