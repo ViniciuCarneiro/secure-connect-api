@@ -1,0 +1,216 @@
+openapi: 3.0.3
+info:
+  title: Secure Connect API
+  description: Backend de autenticação plug and play, que tem como objetivo central gerenciar autenticações, emitir tokens JWT e oferecer outros serviços relacionados à autenticação, de modo que possa ser facilmente integrado (“plugado”) a outros sistemas.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local
+  - url: http://www.secureconnect.com
+    description: Ambiente Homologação
+
+paths:
+  /users/search:
+    get:
+      summary: Consultar todos os usuários
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Lista de usuários obtida com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: Erro interno do servidor
+
+  /users/register:
+    post:
+      summary: Registra um novo usuário
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: Usuário registrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '500':
+          description: Falha ao registrar o usuário
+
+  /users/verify-email:
+    get:
+      summary: Verifica conta por email
+      tags:
+        - Users
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: E-mail confirmado com sucesso
+        '400':
+          description: Token inválido ou expirado
+
+  /auth/login:
+    post:
+      summary: Autentica um usuário
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticação bem-sucedida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais inválidas
+
+  /auth/login/verify-otp:
+    post:
+      summary: Verifica o código OTP
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpVerificationRequest'
+      responses:
+        '200':
+          description: OTP verificado com sucesso
+        '400':
+          description: Código OTP inválido
+
+  /auth/reset-password:
+    post:
+      summary: Redefine a senha do usuário
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Senha redefinida com sucesso
+        '400':
+          description: Token inválido ou expirado
+
+  /auth/forgot-password:
+    post:
+      summary: Solicita redefinição de senha
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Solicitação de redefinição de senha bem-sucedida
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+
+    UserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
+    OtpVerificationRequest:
+      type: object
+      properties:
+        otpCode:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        password:
+          type: string
+        confirmPassword:
+          type: string
+
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
