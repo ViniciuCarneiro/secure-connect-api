@@ -21,7 +21,7 @@ public class TotpService {
     private final TimeBasedOneTimePasswordGenerator totpGenerator;
     private final Base32 base32 = new Base32();
 
-    public TotpService() throws NoSuchAlgorithmException {
+    public TotpService() {
         totpGenerator = new TimeBasedOneTimePasswordGenerator(Duration.ofSeconds(30), 6, HMAC_ALGORITHM);
     }
 
@@ -40,15 +40,18 @@ public class TotpService {
         if (base32Secret == null || base32Secret.isEmpty()) {
             return false;
         }
+
         try {
             byte[] decodedKey = base32.decode(base32Secret);
             SecretKey secretKey = new SecretKeySpec(decodedKey, HMAC_ALGORITHM);
             Instant now = Instant.now();
 
             int currentCode = totpGenerator.generateOneTimePassword(secretKey, now);
+
             if (currentCode == code) {
                 return true;
             }
+
         } catch (InvalidKeyException e) {
             return false;
         }

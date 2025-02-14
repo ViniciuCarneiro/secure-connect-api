@@ -2,10 +2,10 @@ package com.secure.connect.secure_connect.user.service;
 
 import com.secure.connect.secure_connect.user.domain.User;
 import com.secure.connect.secure_connect.user.domain.VerificationToken;
-import com.secure.connect.secure_connect.user.repository.UserRepository;
 import com.secure.connect.secure_connect.user.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;

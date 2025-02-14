@@ -24,8 +24,8 @@ public class EmailService {
         String url = "http://localhost:8080/api/auth/reset-password?token=" + token;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Confirmação de E-mail");
-        message.setText("Para confirmar seu cadastro, clique no link: " + url);
+        message.setSubject("Recuperação de senha");
+        message.setText("Para recuperar sua senha, clique no link: " + url);
         mailSender.send(message);
     }
 }

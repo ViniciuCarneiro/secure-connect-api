@@ -87,7 +87,6 @@ public class JwtService {
         }
     }
 
-
     private Instant genExpirationDate(long minutes){
         return LocalDateTime.now().plusMinutes(minutes).toInstant(ZoneOffset.of("-03:00"));
     }

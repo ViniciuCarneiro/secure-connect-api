@@ -5,7 +5,6 @@ import com.secure.connect.secure_connect.auth.service.TotpService;
 import com.secure.connect.secure_connect.user.domain.User;
 import com.secure.connect.secure_connect.user.domain.dto.request.UserRequest;
 import com.secure.connect.secure_connect.user.domain.dto.response.UserResponse;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,8 @@ public class UserMapper {
        return UserResponse.builder()
                 .name(user.getName())
                 .email(user.getEmail())
-                .userName(user.getUsername())
+                .username(user.getUsername())
+                .emailVerified(user.isEmailVerified())
                 .mfaEnabled(user.isMfaEnabled())
                 .qrCodeMfa(user.isMfaEnabled() ?
                         QrCodeService.getQRCode(TotpService.buildOtpAuthUri(
@@ -45,7 +45,8 @@ public class UserMapper {
             list.add(UserResponse.builder()
                     .name(user.getName())
                     .email(user.getEmail())
-                    .userName(user.getUsername())
+                    .username(user.getUsername())
+                    .emailVerified(user.isEmailVerified())
                     .mfaEnabled(user.isMfaEnabled())
                     .build());
         }

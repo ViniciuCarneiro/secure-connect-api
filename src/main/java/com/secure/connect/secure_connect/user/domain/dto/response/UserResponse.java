@@ -1,7 +1,7 @@
 package com.secure.connect.secure_connect.user.domain.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.secure.connect.secure_connect.user.domain.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Builder
@@ -9,11 +9,24 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
+
+    @JsonProperty("name")
     private String name;
-    private String userName;
+
+    @JsonProperty("username")
+    private String username;
+
+    @JsonProperty("email")
     private String email;
+
+    @JsonProperty("email_verified")
+    private boolean emailVerified;
+
+    @JsonProperty("mfa_enabled")
     private boolean mfaEnabled;
-    @JsonIgnore
+
+    @JsonProperty("qr_code_mfa")
     private String qrCodeMfa;
 }
