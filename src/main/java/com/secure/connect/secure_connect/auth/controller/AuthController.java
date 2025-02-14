@@ -13,6 +13,13 @@ import com.secure.connect.secure_connect.email.service.EmailService;
 import com.secure.connect.secure_connect.user.domain.User;
 import com.secure.connect.secure_connect.user.service.UserService;
 import com.secure.connect.secure_connect.user.service.VerificationTokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Auth", description = "Autenticação e Autorização")
 public class AuthController {
 
     @Autowired
@@ -46,6 +54,11 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
 
+    @Operation(summary = "Realiza o login do usuário e gera um token JWT", description = "Este endpoint realiza a autenticação do usuário e retorna um token JWT para autenticações futuras.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Autenticação realizada com sucesso.", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)) }),
+            @ApiResponse(responseCode = "401", description = "Falha na autenticação, credenciais inválidas", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)))
+    })
     @PostMapping("/login")
     public ResponseEntity<StandardResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest loginRequest) {
 
@@ -84,6 +97,11 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Verifica o código OTP para autenticação de múltiplos fatores", description = "Este endpoint verifica o código OTP enviado ao usuário para permitir a autenticação de múltiplos fatores.", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Código OTP validado com sucesso", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Falha na verificação do código OTP", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)))
+    })
     @PostMapping("/login/verify-otp")
     public ResponseEntity<StandardResponse<LoginResponse>> verifyOtp(@RequestBody @Valid OtpVerificationRequest otpRequest) {
 
@@ -110,6 +128,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Redefine a senha do usuário", description = "Este endpoint permite redefinir a senha do usuário utilizando um token de verificação.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Senha redefinida com sucesso", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Falha na redefinição de senha, token inválido ou expirado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)))
+    })
     @PostMapping("/reset-password")
     public ResponseEntity<StandardResponse<Object>> resetPassword(@RequestHeader String token, @RequestBody @Valid ResetPasswordRequest request) {
 
@@ -154,6 +177,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Solicita a redefinição de senha", description = "Este endpoint permite ao usuário solicitar uma redefinição de senha através do envio de um email.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitação de redefinição de senha realizada com sucesso", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = StandardResponse.class)) })
+    })
     @PostMapping("/forgot-password")
     public ResponseEntity<StandardResponse<Object>> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
 
