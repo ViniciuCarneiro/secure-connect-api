@@ -39,3 +39,5 @@ application.properties
 # OS-specific files
 Thumbs.db
 ehthumbs.db
+
+env.txt
