@@ -2,6 +2,7 @@ package com.secure.connect.secure_connect.auth.config;
 
 import com.secure.connect.secure_connect.auth.domain.enums.Authority;
 import com.secure.connect.secure_connect.auth.jwt.JwtAuthenticationFilter;
+import com.secure.connect.secure_connect.exception.AuthenticationEntryPointException;
 import com.secure.connect.secure_connect.user.domain.enums.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,9 @@ public class SecurityConfiguration {
     @Autowired
     private CorsConfiguration corsConfiguration;
 
+    @Autowired
+    private AuthenticationEntryPointException authenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -35,7 +39,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/openapi.yaml","static/openapi.yaml").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
@@ -43,6 +47,9 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST,"/auth/login/verify-otp").hasAuthority(Authority.PRE_AUTH_MFA.name())
                         .requestMatchers(HttpMethod.POST, "/users/register").hasRole(UserRole.ROLE_USER_ADMIN.getRole())
                         .anyRequest().hasAnyAuthority(UserRole.ROLE_USER_STANDARD.name(), UserRole.ROLE_USER_ADMIN.name())
+                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint(authenticationEntryPoint)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

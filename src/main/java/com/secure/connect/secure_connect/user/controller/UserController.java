@@ -1,7 +1,7 @@
 package com.secure.connect.secure_connect.user.controller;
 
-
 import com.secure.connect.secure_connect.email.service.EmailService;
+import com.secure.connect.secure_connect.exception.UserNotFoundException;
 import com.secure.connect.secure_connect.user.domain.User;
 import com.secure.connect.secure_connect.user.domain.dto.request.UserRequest;
 import com.secure.connect.secure_connect.user.domain.dto.request.UserUpdateRequest;
@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @Tag(name = "Users", description = "Gerenciamento de usuários")
+@Slf4j
 public class UserController {
 
     @Autowired
@@ -53,20 +55,30 @@ public class UserController {
     })
     @GetMapping("/search")
     public ResponseEntity<StandardResponse<UserListResponse>> find() {
+
+        log.info("Iniciando consulta de usuários...");
+
         try {
             List<User> listUsers = userService.findAll();
+
             StandardResponse<UserListResponse> response = StandardResponse.<UserListResponse>builder()
                     .success(true)
                     .message("Busca de usuários concluída com sucesso.")
                     .data(new UserListResponse(UserMapper.userListToUserResponse(listUsers)))
                     .build();
+
+            log.info("Usuários consultados com sucesso!");
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
+            log.error("Erro ao consultar usuários no banco de dados: {}", e.getMessage(), e);
+
             StandardResponse<UserListResponse> response = StandardResponse.<UserListResponse>builder()
                     .success(false)
                     .message("Falha na busca de usuários")
                     .data(null)
                     .build();
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -81,22 +93,35 @@ public class UserController {
     })
     @PostMapping("/register")
     public ResponseEntity<StandardResponse<UserResponse>> register(@RequestBody @Valid UserRequest request) {
+
+        log.info("Iniciando cadastro de usuário...");
+
         try {
+
             User user = userService.registerUser(UserMapper.userRequestToUser(request));
+
             String token = tokenService.generateVerificationToken(user);
+
             emailService.sendVerificationEmail(user.getEmail(), token);
+
             StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
                     .success(true)
                     .message("Usuário registrado com sucesso. E-mail de verificação enviado.")
                     .data(UserMapper.userToUserResponse(user, "secure-connect"))
                     .build();
+
+            log.info("Usuário cadastrado com sucesso: {}", user.getEmail());
+
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
+            log.error("Erro ao cadastrar usuário: {}", e.getMessage(), e);
+
             StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
                     .success(false)
                     .message("Falha ao registrar o usuário")
                     .data(null)
                     .build();
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -106,34 +131,53 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content),
             @ApiResponse(responseCode = "500", description = "Falha ao atualizar o usuário",
                     content = @Content)
     })
     @PutMapping("/update")
     public ResponseEntity<StandardResponse<UserResponse>> updateUser(@RequestBody @Valid UserUpdateRequest request) {
+
+        log.info("Iniciando atualização de dados de usuário...");
+
         try {
+
             Authentication userAuthenticated = SecurityContextHolder.getContext().getAuthentication();
+
             User user = (User) userService.findByEmail(userAuthenticated.getPrincipal().toString());
-            if (user != null) {
-                user.setName(request.getName());
-                user.setUsername(request.getUsername());
-                user.setPassword(request.getPassword());
-                userService.updateUser(user);
-                StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
-                        .success(true)
-                        .message("Usuário atualizado com sucesso.")
-                        .data(UserMapper.userToUserResponse(user, "secure-connect"))
-                        .build();
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            } else {
-                StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
-                        .success(false)
-                        .message("Falha ao atualizar o usuário")
-                        .data(null)
-                        .build();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+            if (user == null) {
+                log.warn("Usuário não encontrado para atualização");
+                throw new UserNotFoundException("Usuário não encontrado para atualização.");
             }
+            user.setName(request.getName());
+            user.setUsername(request.getUsername());
+            user.setPassword(request.getPassword());
+
+            userService.updateUser(user);
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(true)
+                    .message("Usuário atualizado com sucesso.")
+                    .data(UserMapper.userToUserResponse(user, "secure-connect"))
+                    .build();
+
+            log.info("Usuário atualizado com sucesso: {}", user.getEmail());
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (UserNotFoundException ex) {
+            log.warn("Falha na atualização de usuário: {}", ex.getMessage());
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(false)
+                    .message(ex.getMessage())
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
+            log.error("Erro ao atualizar usuário: {}", e.getMessage(), e);
             StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
                     .success(false)
                     .message("Falha ao atualizar o usuário")
@@ -166,36 +210,56 @@ public class UserController {
     )
     @GetMapping("/verify-email")
     public ResponseEntity<StandardResponse<UserResponse>> verifyEmail(@RequestParam String token) {
-        String userId = tokenService.validateVerificationToken(token);
+        log.info("Iniciando verificação de email de ativação da conta...");
 
-        if (userId != null) {
-            if (userService.verifiedEmail(userId)) {
-                tokenService.deleteToken(token);
+        try {
+            String userId = tokenService.validateVerificationToken(token);
 
-                StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
-                        .success(true)
-                        .message("Email confirmado com sucesso.")
-                        .data(null)
-                        .build();
+            if (userId != null) {
+                if (userService.verifiedEmail(userId)) {
+                    tokenService.deleteToken(token);
 
-                return ResponseEntity.ok(response);
+                    StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                            .success(true)
+                            .message("Email confirmado com sucesso.")
+                            .data(null)
+                            .build();
+
+                    log.info("Verificação de email bem sucedida para o token: {}", token);
+
+                    return ResponseEntity.ok(response);
+                } else {
+                    log.warn("Falha na verificação do e-mail: Usuário não verificado para o token: {}", token);
+
+                    StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                            .success(false)
+                            .message("Falha na verificação do e-mail: Usuário não verificado.")
+                            .data(null)
+                            .build();
+
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                }
             } else {
+                log.warn("Token inválido ou expirado: {}", token);
+
                 StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
                         .success(false)
-                        .message("Falha na verificação do e-mail: Usuário não verificado.")
+                        .message("Falha na verificação do e-mail: Token inválido ou expirado.")
                         .data(null)
                         .build();
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
+        } catch (Exception e) {
+            log.error("Erro durante a verificação de email para o token {}: {}", token, e.getMessage(), e);
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(false)
+                    .message("Erro interno ao verificar o e-mail.")
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-
-        StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
-                .success(false)
-                .message("Falha na verificação do e-mail: Token inválido ou expirado.")
-                .data(null)
-                .build();
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

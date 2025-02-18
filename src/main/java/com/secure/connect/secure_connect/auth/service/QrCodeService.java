@@ -6,15 +6,16 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.secure.connect.secure_connect.exception.QrCodeGenerationException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class QrCodeService {
 
     public static String getQRCode(String data) {
@@ -27,15 +28,17 @@ public class QrCodeService {
 
         try {
             BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE, width, height, hints);
-
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, imageFormat, outputStream);
+
             byte[] pngData = outputStream.toByteArray();
 
+            log.info("QR Code gerado com sucesso para os dados informados.");
 
             return "data:image/png;base64," + Base64.encodeBase64String(pngData);
         } catch (WriterException | IOException e) {
-            return null;
+            log.error("Não foi possível gerar o QR Code.", e);
+            throw new QrCodeGenerationException("Não foi possível gerar o QR Code.", e);
         }
     }
 }

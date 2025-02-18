@@ -32,6 +32,7 @@ Antes de iniciar o projeto, certifique-se de ter instalado:
 - Docker
 - MongoDB
 - Redis
+- Senha de App do Google (Caso for usar o Gmail como provedor de emails)
 
 ## Instalação
 
