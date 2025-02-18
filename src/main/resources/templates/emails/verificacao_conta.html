@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificação de Conta</title>
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #e9ecef;
+          font-family: Arial, sans-serif;
+        }
+        .email-container {
+          width: 100%;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+        .email-content {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .email-header {
+          background-color: #28a745;
+          color: #ffffff;
+          padding: 20px;
+          text-align: center;
+        }
+        .email-body {
+          padding: 30px;
+          color: #333333;
+          line-height: 1.6;
+        }
+        .email-body h2 {
+          color: #28a745;
+          margin-top: 0;
+        }
+        .button {
+          display: inline-block;
+          background-color: #28a745;
+          color: #ffffff;
+          padding: 12px 20px;
+          border-radius: 5px;
+          text-decoration: none;
+          margin: 20px 0;
+        }
+        .email-footer {
+          background-color: #f8f9fa;
+          padding: 15px;
+          text-align: center;
+          font-size: 12px;
+          color: #777777;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-content">
+        <div class="email-header">
+            <h1>Verificação de Conta</h1>
+        </div>
+        <div class="email-body">
+            <p>Olá, </p>
+            <p>
+                Obrigado por se cadastrar em nosso site! Para concluir seu cadastro e ativar sua conta, clique no botão abaixo:
+            </p>
+            <p style="text-align: center;">
+                <a href="${verificationLink}" class="button">Verificar Conta</a>
+            </p>
+            <p>
+                Caso o botão não funcione, copie e cole o seguinte link no seu navegador:
+            </p>
+            <p>
+                <a href="${verificationLink}">${verificationLink}</a>
+            </p>
+            <p>
+                Se você não realizou este cadastro, por favor, desconsidere este e-mail.
+            </p>
+            <p>Atenciosamente,<br>Equipe Secure Connect</p>
+        </div>
+        <div class="email-footer">
+            <p>&copy; 2025 Secure Connect. Todos os direitos reservados.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

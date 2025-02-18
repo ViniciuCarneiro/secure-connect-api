@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperação de Senha</title>
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #f2f4f6;
+          font-family: Arial, sans-serif;
+        }
+        .container {
+          width: 100%;
+          padding: 20px;
+          box-sizing: border-box;
+        }
+        .content {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+          background-color: #007bff;
+          color: #ffffff;
+          padding: 20px;
+          text-align: center;
+        }
+        .body {
+          padding: 30px;
+          color: #333333;
+          line-height: 1.6;
+        }
+        .body h2 {
+          margin-top: 0;
+          color: #007bff;
+        }
+        .button {
+          display: inline-block;
+          background-color: #007bff;
+          color: #ffffff;
+          padding: 12px 20px;
+          border-radius: 5px;
+          text-decoration: none;
+          margin: 20px 0;
+        }
+        .footer {
+          background-color: #f2f4f6;
+          padding: 15px;
+          text-align: center;
+          font-size: 12px;
+          color: #777777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="content">
+        <div class="header">
+            <h1>Recuperação de Senha</h1>
+        </div>
+        <div class="body">
+            <p>Olá,</p>
+            <p>
+                Recebemos uma solicitação para redefinir sua senha. Caso você tenha feito esta solicitação, clique no botão abaixo para criar uma nova senha:
+            </p>
+            <p style="text-align: center;">
+                <a th:href="${resetLink}" class="button">Redefinir Senha</a>
+            </p>
+            <p>
+                Se o botão acima não funcionar, copie e cole o seguinte link no seu navegador:
+            </p>
+            <p>
+                <strong th:text="${resetLink}"> </strong>
+            </p>
+            <p>
+                Se você não solicitou a recuperação de senha, por favor, desconsidere este e-mail.
+            </p>
+            <p>Atenciosamente,<br>Equipe Secure Connect</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 Secure Connect. Todos os direitos reservados.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
