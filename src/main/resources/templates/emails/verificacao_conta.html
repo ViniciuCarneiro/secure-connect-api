@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -69,13 +69,13 @@
                 Obrigado por se cadastrar em nosso site! Para concluir seu cadastro e ativar sua conta, clique no botão abaixo:
             </p>
             <p style="text-align: center;">
-                <a href="${verificationLink}" class="button">Verificar Conta</a>
+                <a th:href="${verificationLink}" class="button">Verificar Conta</a>
             </p>
             <p>
                 Caso o botão não funcione, copie e cole o seguinte link no seu navegador:
             </p>
             <p>
-                <a href="${verificationLink}">${verificationLink}</a>
+                <strong th:text="${verificationLink}"> </strong>
             </p>
             <p>
                 Se você não realizou este cadastro, por favor, desconsidere este e-mail.

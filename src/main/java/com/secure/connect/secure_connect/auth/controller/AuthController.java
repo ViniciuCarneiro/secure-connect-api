@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +37,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth")
@@ -61,6 +63,9 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     @Operation(summary = "Realiza o login do usuário e gera um token JWT",
             description = "Este endpoint realiza a autenticação do usuário e retorna um token JWT para autenticações futuras.")
     @ApiResponses(value = {
@@ -82,16 +87,39 @@ public class AuthController {
             );
 
             User user = (User) authentication.getPrincipal();
+
+            log.info("Verificando existencia de token no redis...");
+            String redisKey = "login:" + user.getEmail();
+            String existingToken = redisTemplate.opsForValue().get(redisKey);
+
+            if (existingToken != null) {
+                log.info("Token encontrado no redis, retornando o token salvo no cache");
+
+                StandardResponse<LoginResponse> response = StandardResponse.<LoginResponse>builder()
+                        .success(true)
+                        .message("Autenticação realizada com sucesso.")
+                        .data(new LoginResponse(existingToken))
+                        .build();
+
+                return ResponseEntity.ok(response);
+            }
+
             String token;
+            long tokenValidity;
 
             if (!user.isMfaEnabled()) {
                 log.info("Gerando token para usuário {} sem MFA.", user.getEmail());
                 token = jwtService.generateToken(user, user.getAuthorities(), 60);
+                tokenValidity = 60;
             } else {
                 log.info("Gerando token para usuário {} com MFA pré-autorizado.", user.getEmail());
                 var preAuthAuthority = new SimpleGrantedAuthority(Authority.PRE_AUTH_MFA.name());
                 token = jwtService.generateToken(user, List.of(preAuthAuthority), 5);
+                tokenValidity = 5;
             }
+
+            redisTemplate.opsForValue().set("login:" + user.getEmail(), token, tokenValidity, TimeUnit.MINUTES);
+            log.info("Token armazenado no Redis para o usuário: {}", user.getEmail());
 
             log.info("Autenticação realizada com sucesso para o email: {}", loginRequest.getEmail());
 

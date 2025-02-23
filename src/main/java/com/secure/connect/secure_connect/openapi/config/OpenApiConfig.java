@@ -29,8 +29,7 @@ public class OpenApiConfig {
                         .description("Backend de autenticação plug and play, que tem como objetivo central gerenciar autenticações, emitir tokens JWT e oferecer outros serviços relacionados à autenticação, de modo que possa ser facilmente integrado (“plugado”) a outros sistemas.")
                         .version("1.0.0"))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Ambiente local"),
-                        new Server().url("http://www.secureconnect.com").description("Ambiente Homologação")
+                        new Server().url("http://localhost:8080").description("Ambiente local")
                 ));
     }
 }

@@ -21,7 +21,7 @@ public class AuthenticationEntryPointException implements AuthenticationEntryPoi
         response.setContentType("application/json");
 
         Map<String, Object> data = new HashMap<>();
-        data.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+        data.put("status", false);
         data.put("message", "Acesso não autorizado para esse recurso");
 
         ObjectMapper objectMapper = new ObjectMapper();
