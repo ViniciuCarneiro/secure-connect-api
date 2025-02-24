@@ -8,11 +8,11 @@ A API **Secure Connect** é um serviço de autenticação e gerenciamento de usu
 
 - Emissão e validação de tokens JWT.
 - Gerenciamento de permissões com roles de acesso.
-- Autenticação em dois fatores (2FA) utilizando aplicativos de autenticação e e-mail.
+- Autenticação em dois fatores (2FA) utilizando aplicativos de autenticação.
 - Cadastro, atualização e exclusão de usuários.
 - Redefinição de senha com envio de e-mail para recuperação.
 - Confirmação de cadastro via e-mail de verificação.
-- Envio de alertas para alterações de senha e novos logins.
+- Envio de alertas por e-mail.
 
 ## Tecnologias Utilizadas
 
@@ -23,6 +23,7 @@ A API **Secure Connect** é um serviço de autenticação e gerenciamento de usu
 - **Docker**
 - **Maven**
 - **Redis**
+- **Swagger**
 
 ## Pré-requisitos
 
@@ -48,11 +49,16 @@ Antes de iniciar o projeto, certifique-se de ter instalado:
 
          MONGO_DB_HOST=localhost
          MONGO_DB_PORT=27017
+         REDIS_HOST=localhost
+         REDIS_PORT=6379
          SECURITY_SECRET=secret_secure-connect-api
          EMAIL_HOST=smtp.gmail.com
          EMAIL_USER=seuemail@gmail.com
          EMAIL_PASSWORD=senha_app_google
          EMAIL_PORT=587
+         VERIFY_EMAIIL_HOST=http://localhost:8080/api/auth/verify-email
+         RESET_EMAIL_HOST=http://localhost:8080/api/auth/reset-password
+         CORS_ORIGINS=api.securiity.cors.origins=http://localhost:8080,http://localhost:3000
    
    Com o arquivo criado, importar na IDE (Enviroments Variables)
 
@@ -98,7 +104,7 @@ Utilize esta interface para explorar e interagir com os endpoints disponíveis.
    **Método:** `POST /auth/login/verify-otp`  
    Realiza a verificação do código OTP para usuários com MFA ativo.
 
-   > **Obs:** Utilize o token recebido no login (campo `token_otp`) e informe o código OTP gerado pelo aplicativo (ex.: Google Authenticator).
+   > **Obs:** Utilize o token recebido no login (campo `access_token`) e informe o código OTP gerado pelo aplicativo (ex.: Google Authenticator).
 
 3. **Cadastro de Usuários**  
    **Método:** `POST /users/register`  

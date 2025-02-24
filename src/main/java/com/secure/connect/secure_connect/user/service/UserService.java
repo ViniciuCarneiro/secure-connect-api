@@ -82,7 +82,7 @@ public class UserService {
         try {
             log.info("Atualizando dados do usuário no banco de dados: {}", user);
 
-            userRepository.save(user);
+            userRepository.save(encryptData(user));
 
             log.info("Usuário atualizado com sucesso: {}", user.getEmail());
         } catch (Exception ex) {
@@ -91,26 +91,13 @@ public class UserService {
         }
     }
 
-    protected User encryptData(User user) {
-
+    public void deleteUser(String userId) {
         try {
-            log.info("Criptografando dados sensíveis do usuário: {}", user.getEmail());
-            user.setPassword(encryptPassword(user.getPassword()));
-
-            if (user.isMfaEnabled()) {
-                String secretKey = totpService.generateSecretKey();
-                if (secretKey != null) {
-                    user.setTotpSecret(secretKey);
-                    log.info("Chave TOTP gerada para o usuário: {}", user.getEmail());
-                } else {
-                    log.warn("Falha ao gerar chave TOTP para o usuário: {}. Desabilitando MFA.", user.getEmail());
-                    user.setMfaEnabled(false);
-                }
-            }
-            return user;
+            log.info("Deletando dados do usuário no banco de dados: {}", userId);
+            userRepository.deleteById(userId);
         } catch (Exception ex) {
-            log.error("Erro ao criptografar dados do usuário {}: {}", user.getEmail(), ex.getMessage(), ex);
-            throw new RuntimeException("Erro ao criptografar dados do usuário", ex);
+            log.error("Erro ao deletar usuário {}: {}", userId, ex.getMessage(), ex);
+            throw new RuntimeException("Erro ao deletar usuário", ex);
         }
     }
 
@@ -135,6 +122,31 @@ public class UserService {
         } catch (Exception ex) {
             log.error("Erro ao verificar email para o usuário com ID {}: {}", userId, ex.getMessage(), ex);
             throw new RuntimeException("Erro ao verificar email", ex);
+        }
+    }
+
+    protected User encryptData(User user) {
+
+        try {
+            log.info("Criptografando dados sensíveis do usuário: {}", user.getEmail());
+            user.setPassword(encryptPassword(user.getPassword()));
+
+            if (user.isMfaEnabled()) {
+                if (user.getTotpSecret() == null) {
+                    String secretKey = totpService.generateSecretKey();
+                    if (secretKey != null) {
+                        user.setTotpSecret(secretKey);
+                        log.info("Chave TOTP gerada para o usuário: {}", user.getEmail());
+                    } else {
+                        log.warn("Falha ao gerar chave TOTP para o usuário: {}. Desabilitando MFA.", user.getEmail());
+                        user.setMfaEnabled(false);
+                    }
+                }
+            }
+            return user;
+        } catch (Exception ex) {
+            log.error("Erro ao criptografar dados do usuário {}: {}", user.getEmail(), ex.getMessage(), ex);
+            throw new RuntimeException("Erro ao criptografar dados do usuário", ex);
         }
     }
 
