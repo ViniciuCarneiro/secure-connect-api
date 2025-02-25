@@ -1,4 +1,4 @@
-# Secure Connect
+# Secure Connect API
 
 ## Visão Geral
 
@@ -89,70 +89,162 @@ Utilize esta interface para explorar e interagir com os endpoints disponíveis.
 
 ### Endpoints
 
-1. **Autenticação**  
-   **Método:** `POST /auth/login`  
-   Realiza a autenticação do usuário utilizando e-mail e senha.
+## Índice
 
-   #### Fluxo de Retorno
-   - **Caso MFA NÃO esteja ativado:**  
-     Retorna um token JWT completo, concedendo acesso a todos os recursos protegidos.
+1. [Autenticação](#1-autenticação)
+2. [Autenticação MFA](#2-autenticação-mfa)
+3. [Cadastro de Usuários](#3-cadastro-de-usuários)
+4. [Consulta de Usuários](#4-consulta-de-usuários)
+5. [Verificação de E-mail](#5-verificação-de-e-mail)
+6. [Reset de Senha](#6-reset-de-senha)
+7. [Solicitar Recuperação de Senha](#7-solicitar-recuperação-de-senha)
+8. [Atualização de Dados de Usuário](#8-atualização-de-dados-de-usuário)
+9. [Exclusão de Usuário](#9-exclusão-de-usuário)
 
-   - **Caso MFA esteja ativado:**  
-     Retorna um token com acesso restrito ao endpoint de verificação de OTP. Outros recursos permanecem bloqueados até que o OTP seja validado.
+---
 
-2. **Autenticação MFA**  
-   **Método:** `POST /auth/login/verify-otp`  
-   Realiza a verificação do código OTP para usuários com MFA ativo.
+## 1. Autenticação
 
-   > **Obs:** Utilize o token recebido no login (campo `access_token`) e informe o código OTP gerado pelo aplicativo (ex.: Google Authenticator).
+- **Método:** `POST`
+- **Endpoint:** `/auth/login`
+- **Descrição:**  
+  Realiza a autenticação do usuário utilizando e-mail e senha.
 
-3. **Cadastro de Usuários**  
-   **Método:** `POST /users/register`  
-   Registra um novo usuário no sistema.  
-   **Acesso restrito:** Somente usuários autenticados com token válido e role **ADMIN** podem acessar este endpoint.
+### Fluxo de Retorno
 
-   #### Fluxo de Cadastro
-   - Cria o usuário na coleção `users` do MongoDB.
-   - Se o campo `mfaAtivado` for `true`:
-      - A API gera um QR Code (em base64) para que o usuário possa configurar a autenticação de dois fatores (ex.: Google Authenticator).
-      - É enviado um e-mail para o usuário com um token de verificação (válido por 24 horas). Sem a verificação por e-mail, o acesso do usuário não será liberado.
+- **Caso MFA NÃO esteja ativado:**  
+  Retorna um token JWT completo, concedendo acesso a todos os recursos protegidos.
 
+- **Caso MFA esteja ativado:**  
+  Retorna um token com acesso restrito ao endpoint de verificação de OTP. Outros recursos permanecem bloqueados até que o OTP seja validado.
 
-4. **Verificação de E-mail**  
-   **Método:** `GET /users/verify-email`  
-   Verifica o token enviado por e-mail para ativar a conta do usuário.
+---
 
+## 2. Autenticação MFA
 
-5. **Consulta de Usuários**  
-   **Método:** `GET /users/search`  
-   Consulta os usuários cadastrados no sistema. Este endpoint pode ser utilizado para filtrar ou listar usuários com roles **ADMIN** e **STANDARD**.
+- **Método:** `POST`
+- **Endpoint:** `/auth/login/verify-otp`
+- **Descrição:**  
+  Realiza a verificação do código OTP para usuários com MFA ativo.
 
-   **Requisito:**  
-   Um token JWT válido deve ser enviado no header da requisição.
+> **Observação:**  
+> Utilize o token recebido no login (campo `access_token`) e informe o código OTP gerado pelo aplicativo (ex.: Google Authenticator).
+
+---
+
+## 3. Cadastro de Usuários
+
+- **Método:** `POST`
+- **Endpoint:** `/users/register`
+- **Descrição:**  
+  Registra um novo usuário no sistema.
+
+- **Acesso Restrito:**  
+  Somente usuários autenticados com token válido e role **ADMIN** podem acessar este endpoint.
+
+### Fluxo de Cadastro
+
+- Criação do usuário na coleção `users` do MongoDB.
+- Se o campo `mfaAtivado` for `true`:
+    - A API gera um QR Code (em base64) para que o usuário possa configurar a autenticação de dois fatores (ex.: Google Authenticator).
+    - Um e-mail é enviado ao usuário contendo um token de verificação (válido por 24 horas). Sem a verificação por e-mail, o acesso do usuário não será liberado.
+
+---
+
+## 4. Consulta de Usuários
+
+- **Método:** `GET`
+- **Endpoint:** `/users/search`
+- **Descrição:**  
+  Consulta os usuários cadastrados no sistema, permitindo a filtragem ou listagem de usuários com roles **ADMIN** e **STANDARD**.
+
+---
+
+## 5. Verificação de E-mail
+
+- **Método:** `GET`
+- **Endpoint:** `/users/verify-email`
+- **Descrição:**  
+  Verifica o token enviado por e-mail para ativar a conta do usuário.
+
+---
+
+## 6. Reset de Senha
+
+- **Método:** `POST`
+- **Endpoint:** `/auth/reset-password`
+- **Descrição:**  
+  Permite a alteração da senha atual para uma nova senha, conforme informado pelo usuário durante o processo de recuperação.
+
+---
+
+## 7. Solicitar Recuperação de Senha
+
+- **Método:** `POST`
+- **Endpoint:** `/auth/forgot-password`
+- **Descrição:**  
+  Solicita a recuperação de senha para o usuário, enviando um e-mail de recuperação para o endereço informado.
+
+---
+
+## 8. Atualização de Dados de Usuário
+
+- **Método:** `PUT`
+- **Endpoint:** `/users/update`
+- **Descrição:**  
+  Realiza a atualização dos dados do usuário.
+
+---
+
+## 9. Exclusão de Usuário
+
+- **Método:** `DELETE`
+- **Endpoint:** `/users/delete`
+- **Descrição:**  
+  Exclui os dados do usuário do banco de dados.
+
+---
+
+**Requisito:**  
+   Um token JWT válido deve ser enviado no header de cada requisição.
 
 ---
 
 ### Fluxo Completo de Uso
 
 - **Autenticação:**
-   1. Envie as credenciais via `POST /auth/login`.
-   2. Se o usuário não possuir MFA, receba o token JWT completo.
-   3. Se o usuário possuir MFA, receba um token restrito e, em seguida, envie o código OTP via `POST /auth/login/verify-otp` para obter o token completo.
-
+    1. Envie as credenciais via `POST /auth/login`.
+    2. Se o usuário não possuir MFA, receba o token JWT completo.
+    3. Se o usuário possuir MFA, receba um token restrito e, em seguida, envie o código OTP via `POST /auth/login/verify-otp` para obter o token completo.
 
 - **Cadastro de Novo Usuário (Acesso Somente para ADMIN):**
-   1. Envie o token de um usuário **ADMIN** e os dados do novo usuário via `POST /users/register`.
-   2. Se o novo usuário ativar o MFA, ele receberá, além do cadastro, um QR Code para configuração e um e-mail com o token de verificação.
-
+    1. Envie o token de um usuário **ADMIN** e os dados do novo usuário via `POST /users/register`.
+    2. Se o novo usuário ativar o MFA, ele receberá, além do cadastro, um QR Code para configuração e um e-mail com o token de verificação.
 
 - **Ativação da Conta:**
-   - O usuário deve confirmar o cadastro enviando o token recebido por e-mail através do endpoint `GET /users/verify-email` (token válido por 24 horas).
-
+    - O usuário deve confirmar o cadastro enviando o token recebido por e-mail através do endpoint `GET /users/verify-email` (token válido por 24 horas).
 
 - **Consulta de Usuários:**
-   - Certifique-se de enviar um token JWT válido no header da requisição.
+    - Certifique-se de enviar um token JWT válido no header da requisição.
 
----
+- **Atualização de Dados do Usuário:**
+    1. Envie um token JWT válido no header da requisição.
+    2. Envie os dados atualizados via `PUT /users/update`.
+    3. A API atualiza os dados do usuário e retorna a confirmação da alteração.
+
+- **Exclusão de Usuário:**
+    1. Certifique-se de enviar um token JWT válido no header da requisição.
+    2. Envie a requisição de exclusão via `DELETE /users/delete`.
+    3. A API remove os dados do usuário do banco de dados e retorna a confirmação da exclusão.
+
+- **Solicitação de Recuperação de Senha:**
+    1. Envie a requisição com o e-mail do usuário via `POST /auth/forgot-password`.
+    2. A API envia um e-mail de recuperação de senha com as instruções necessárias para proceder com o reset.
+
+- **Reset de Senha:**
+    1. Após receber o e-mail, o usuário envia a nova senha juntamente com o token de recuperação via `POST /auth/reset-password`.
+    2. A API atualiza a senha do usuário e confirma a alteração.
+
 
 ### Notas Adicionais
 
