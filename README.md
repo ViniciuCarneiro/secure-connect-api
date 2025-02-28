@@ -31,6 +31,7 @@ Antes de iniciar o projeto, certifique-se de ter instalado:
 
 - Java 17 ou superior
 - Docker
+- Docker Compose
 - MongoDB
 - Redis
 - Senha de App do Google (Caso for usar o Gmail como provedor de emails)
@@ -67,9 +68,10 @@ Antes de iniciar o projeto, certifique-se de ter instalado:
 
 1. **Inicie o MongoDB e o Redis utilizando Docker:**
 
+    Acesse a pasta docker na raiz do projeto e execute os comandos abaixo no terminal:
+
    ```bash
-   docker start mongodb-container
-   docker start redis-container
+   docker compose up
 
 2. Verifique se os containers foram iniciados:
    ```bash

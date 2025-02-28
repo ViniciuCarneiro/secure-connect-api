@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongo:/data/db  # volume para persistência dos dados
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro  # script de inicialização
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+

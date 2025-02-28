@@ -36,6 +36,8 @@ application.properties
 # IDE files
 .vscode/
 
+docker/data/
+
 # OS-specific files
 Thumbs.db
 ehthumbs.db
