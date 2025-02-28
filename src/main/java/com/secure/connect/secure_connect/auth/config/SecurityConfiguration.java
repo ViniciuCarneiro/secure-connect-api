@@ -46,6 +46,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/users/verify-email").permitAll()
                         .requestMatchers(HttpMethod.POST,"/auth/login/verify-otp").hasAuthority(Authority.PRE_AUTH_MFA.name())
                         .requestMatchers(HttpMethod.POST, "/users/register").hasRole(UserRole.ROLE_USER_ADMIN.getRole())
+                        .requestMatchers(HttpMethod.DELETE, "/users/delete").hasRole(UserRole.ROLE_USER_ADMIN.getRole())
+                        .requestMatchers(HttpMethod.GET, "/users/search-data").hasRole(UserRole.ROLE_USER_ADMIN.getRole())
                         .anyRequest().hasAnyAuthority(UserRole.ROLE_USER_STANDARD.name(), UserRole.ROLE_USER_ADMIN.name())
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling

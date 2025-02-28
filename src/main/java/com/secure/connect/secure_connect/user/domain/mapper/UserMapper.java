@@ -37,6 +37,22 @@ public class UserMapper {
                         )) : null)
                 .build();
     }
+    public static UserResponse userToUserResponseAdmin(User user, String appName) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .emailVerified(user.isEmailVerified())
+                .mfaEnabled(user.isMfaEnabled())
+                .qrCodeMfa(user.isMfaEnabled() ?
+                        QrCodeService.getQRCode(TotpService.buildOtpAuthUri(
+                                appName,
+                                user.getEmail(),
+                                user.getTotpSecret()
+                        )) : null)
+                .build();
+    }
 
     public static List<UserResponse> userListToUserResponse(List<User> lisUsers) {
         List<UserResponse> list = new ArrayList<>();

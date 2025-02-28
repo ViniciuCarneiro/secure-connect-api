@@ -83,6 +83,60 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Consultar os dados de um usuário especifico", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dados do usuário obtido com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserListResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                    content = @Content)
+    })
+    @GetMapping("/search-data")
+    public ResponseEntity<StandardResponse<UserResponse>> findByEmail(@RequestParam @Valid String email) {
+
+        log.info("Iniciando consulta dos dados do usuário...");
+
+        try {
+            User user = (User) userService.findByEmail(email);
+
+            if (user == null) {
+                log.warn("Usuário não encontrado");
+                throw new UserNotFoundException("Usuário não encontrado.");
+            }
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(true)
+                    .message("Busca de usuários concluída com sucesso.")
+                    .data(UserMapper.userToUserResponseAdmin(user, "secure-connect"))
+                    .build();
+
+            log.info("Usuário consultado com sucesso!");
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (UserNotFoundException ex) {
+            log.warn("Falha ao buscar dados de usuário: {}", ex.getMessage());
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(false)
+                    .message(ex.getMessage())
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            log.error("Erro ao consultar usuários no banco de dados: {}", e.getMessage(), e);
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(false)
+                    .message("Falha na busca de usuários")
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
     @Operation(summary = "Registra um novo usuário", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Usuário registrado com sucesso",
@@ -181,6 +235,62 @@ public class UserController {
             StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
                     .success(false)
                     .message("Falha ao atualizar o usuário")
+                    .data(null)
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @Operation(summary = "Exclui um usuário existente", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário excluido com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content),
+            @ApiResponse(responseCode = "500", description = "Falha ao excluir o usuário",
+                    content = @Content)
+    })
+    @DeleteMapping("/delete")
+    public ResponseEntity<StandardResponse<UserResponse>> updateUser(@RequestParam @Valid String userId) {
+
+        log.info("Iniciando exclusão de dados de usuário...");
+
+        try {
+
+            User user = userService.findById(userId);
+
+            if (user == null) {
+                log.warn("Usuário não encontrado para exclusão");
+                throw new UserNotFoundException("Usuário não encontrado para exclusão.");
+            }
+
+            userService.deleteUser(user.getId());
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(true)
+                    .message("Usuário excluido com sucesso.")
+                    .data(null)
+                    .build();
+
+            log.info("Usuário excluido com sucesso: {}", user.getEmail());
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (UserNotFoundException ex) {
+            log.warn("Falha na exclusão de usuário: {}", ex.getMessage());
+
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(false)
+                    .message(ex.getMessage())
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            log.error("Erro ao excluir usuário: {}", e.getMessage(), e);
+            StandardResponse<UserResponse> response = StandardResponse.<UserResponse>builder()
+                    .success(false)
+                    .message("Falha ao excluir o usuário")
                     .data(null)
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

@@ -68,8 +68,8 @@ Antes de iniciar o projeto, certifique-se de ter instalado:
 1. **Inicie o MongoDB e o Redis utilizando Docker:**
 
    ```bash
-   docker run --name mongodb -d -p 27017:27017 mongo
-   docker run --name redis -d -p 6379:6379 redis
+   docker start mongodb-container
+   docker start redis-container
 
 2. Verifique se os containers foram iniciados:
    ```bash
